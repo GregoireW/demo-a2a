@@ -1,0 +1,27 @@
+{
+  "request": {
+    "urlPath": "/JWKS",
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "server": "oidc-server",
+      "content-type": "application/json; charset=utf-8"
+    },
+    "transformers": [
+      "response-template"
+    ],
+    "jsonBody": {
+      "keys": [
+        {
+          "kty": "RSA",
+          "e": "AQAB",
+          "use": "sig",
+          "kid": "b9d490ac-d305-42be-99ae-e0b81f1ae29a",
+          "n": "mDFLDaTPZmsBAS0MI-grXn9rptaOojkpuKp0NdcxifgpAQ4VrhvKscFV8gU6StRP7O5vkBauuv3vno3CjZQWOOvMnMycHJd6QTTok9jYXfCEWWsGnuKnfsI3pv30KsOeunb9ora2-BVl_b1-tf2PS2GOCkC7sq2dWeQ-y6VuNLv5Q-hlpmv-NG1CWX78pAOk1JjXSlRk7uzHYDxaFbmvlLDLuU7pGKiDp0r9-SFlHjjvxJqX8bb15WbdredUQMx6BAEnm8zNPWMI1Y22lSANANLfpDb_3XeeGLd-RLWLdB4WA8e_mEgCgfFS-mevywsygAI30QpnXjzUiutl4PXBDQ"
+        }
+      ]
+    }
+  }
+}
