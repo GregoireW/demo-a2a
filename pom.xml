@@ -14,5 +14,6 @@
         <module>lib</module>
         <module>agent-with-auth</module>
         <module>agent-without-auth</module>
+        <module>client</module>
     </modules>
 </project>

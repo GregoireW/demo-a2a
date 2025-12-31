@@ -1,0 +1,13 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9999/JWKS
+          issuer-uri: http://localhost:9999
+  application:
+    name: demo-a2a-client
+
+server:
+  port: 8081
+
