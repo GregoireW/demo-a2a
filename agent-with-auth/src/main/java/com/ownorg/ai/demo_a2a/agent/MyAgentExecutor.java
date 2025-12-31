@@ -58,9 +58,9 @@ public class MyAgentExecutor implements AgentExecutor {
                 .contextId(context.getContextId())
                 .artifact(new Artifact.Builder()
                         .name("report")
-                        .description(SecurityContextHolder.getContext().getAuthentication().getName()+ "this is an intermediate report.")
+                        .description(SecurityContextHolder.getContext().getAuthentication().getName()+ " this is an intermediate report.")
                         .artifactId("report-1")
-                        .parts(Collections.singletonList(new TextPart("This is an intermediate report.")))
+                        .parts(Collections.singletonList(new TextPart(SecurityContextHolder.getContext().getAuthentication().getName()+ " This is an intermediate report.")))
                         .build())
                 .build();
         eventQueue.enqueueEvent(intermediateTask);

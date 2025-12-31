@@ -25,3 +25,8 @@ Here are the JWT tokens to use for testing:
 
 With a2a-inspector, you can get a visual representation of the interactions between services and for instance with the authenticated A2A server:
 ![A2A Inspector Screenshot](doc/img/demo.png)
+
+
+## Note
+
+The client java application in the "client" folder is usable, but it is not entirely satisfying yet.
