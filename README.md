@@ -29,4 +29,38 @@ With a2a-inspector, you can get a visual representation of the interactions betw
 
 ## Note
 
+### Client application
+
 The client java application in the "client" folder is usable, but it is not entirely satisfying yet.
+
+### History
+
+There is a 'v0' tag showing the state of the project when the only option was to have a single agent.
+
+Since then, the `@Agent` annotation was introduced to allow multiple agents in the same application (the agent class will be included in the Spring context automatically, but you have to implements the `AgentDefinition` interface to make it work).
+With this version, you have to:
+- Specify the base URL of the agent in the configuration (`a2a.agent.base-url` key) (default to `http://localhost:8080` if not set)
+- If you set a `well-known-agent-name`, and if there is an agent with the same name ( `@Agent("your-agent-name")`)
+  - the agent card will be served in the default a2a location: `/.well-known/agent-card.json`
+  - the agent itself will be deployed on the `/agent` endpoint.
+- All other agents will:
+  - have their public card served at `/.well-known/agents/{agentName}.json` location 
+  - will be served on the `/agents/{agentName}` endpoint.
+
+Example:
+
+```java
+@Agent("hello-world")
+public class HelloWorldAgent implements AgentDefinition {
+    // implementation
+}
+```
+
+
+```yaml
+a2a:
+  agent:
+    base-url: http://localhost:8080
+    well-known-agent-name: hello-world
+
+```

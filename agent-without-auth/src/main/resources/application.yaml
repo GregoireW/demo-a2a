@@ -1,4 +1,7 @@
 spring:
   application:
     name: demo-a2a-anonymous
-
+a2a:
+  agent:
+    base-url: http://localhost:8080
+    well-known-agent-name: hello-world
