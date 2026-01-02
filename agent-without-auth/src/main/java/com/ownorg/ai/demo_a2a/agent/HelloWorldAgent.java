@@ -1,22 +1,19 @@
 package com.ownorg.ai.demo_a2a.agent;
 
-import io.a2a.server.agentexecution.AgentExecutor;
+import com.ownorg.ai.a2a.definition.Agent;
+import com.ownorg.ai.a2a.definition.AgentDefinition;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.*;
-import lombok.AllArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@Component
-@AllArgsConstructor
-public class MyAgentExecutor implements AgentExecutor {
+@Agent("hello-world")
+public class HelloWorldAgent implements AgentDefinition {
 
     @Override
     public void execute(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
@@ -32,7 +29,7 @@ public class MyAgentExecutor implements AgentExecutor {
             default -> {
                 eventQueue.enqueueEvent(new Message.Builder()
                         .role(Message.Role.AGENT)
-                        .parts(Collections.singletonList(new TextPart("Hello "+ SecurityContextHolder.getContext().getAuthentication().getName() + " This is " + Thread.currentThread().getName())))
+                        .parts(Collections.singletonList(new TextPart("Hello World " + Thread.currentThread().getName())))
                         .build());
             }
         }
@@ -58,9 +55,9 @@ public class MyAgentExecutor implements AgentExecutor {
                 .contextId(context.getContextId())
                 .artifact(new Artifact.Builder()
                         .name("report")
-                        .description(SecurityContextHolder.getContext().getAuthentication().getName()+ " this is an intermediate report.")
+                        .description("intermediate report")
                         .artifactId("report-1")
-                        .parts(Collections.singletonList(new TextPart(SecurityContextHolder.getContext().getAuthentication().getName()+ " This is an intermediate report.")))
+                        .parts(Collections.singletonList(new TextPart("This is an intermediate report.")))
                         .build())
                 .build();
         eventQueue.enqueueEvent(intermediateTask);
@@ -74,7 +71,7 @@ public class MyAgentExecutor implements AgentExecutor {
                 .taskId(context.getTaskId())
                 .contextId(context.getContextId())
                 .status(new TaskStatus(TaskState.COMPLETED, new Message.Builder().role(Message.Role.AGENT)
-                        .parts(Collections.singletonList(new TextPart("Hello World - Async Response from " + Thread.currentThread().getName())))
+                        .parts(Collections.singletonList(new TextPart("Hello World - Async Response")))
                         .build(), OffsetDateTime.now()))
                 .build();
         eventQueue.enqueueEvent(finalTask);
@@ -96,7 +93,7 @@ public class MyAgentExecutor implements AgentExecutor {
         updater.startWork();
 
 
-        final TextPart responsePart = new TextPart("Processing task executor request for "+SecurityContextHolder.getContext().getAuthentication().getName()+" on "+Thread.currentThread().getName(), Map.of("Thread", Thread.currentThread().getName()));
+        final TextPart responsePart = new TextPart("Processing task executor request "+Thread.currentThread().getName(), Map.of("Thread", Thread.currentThread().getName()));
         final List<Part<?>> parts = List.of(responsePart);
         // add the response as an artifact and complete the task
         updater.addArtifact(parts, null, null, null);
@@ -123,5 +120,26 @@ public class MyAgentExecutor implements AgentExecutor {
         updater.complete(new Message.Builder().role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("Hello World - task Response")))
                 .build());
+    }
+
+    @Override
+    public AgentCard.Builder publicCard() {
+        // NOTE: Transport validation will automatically check that transports specified
+        // in this AgentCard match those available on the classpath when handlers are initialized
+        return new AgentCard.Builder()
+                .name("Hello World Agent")
+                .description("Just a hello world agent")
+                .version("1.0.0")
+                .documentationUrl("http://example.com/docs")
+                .defaultInputModes(Collections.singletonList("text"))
+                .defaultOutputModes(Collections.singletonList("text"))
+                .skills(Collections.singletonList(new AgentSkill.Builder()
+                        .id("hello_world")
+                        .name("Returns hello world")
+                        .description("just returns hello world")
+                        .tags(Collections.singletonList("hello world"))
+                        .examples(List.of("hi", "hello world"))
+                        .build()))
+        ;
     }
 }

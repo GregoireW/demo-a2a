@@ -1,8 +1,9 @@
 package com.ownorg.ai.a2a.controllers;
 
-import com.ownorg.ai.a2a.config.user.A2AUserProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ownorg.ai.a2a.config.user.A2AUserProvider;
+import com.ownorg.ai.a2a.internal.AgentStore;
 import io.a2a.common.A2AHeaders;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.extensions.A2AExtensions;
@@ -30,16 +31,43 @@ import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KE
 @RestController
 @AllArgsConstructor
 public class AgentController {
-    private final JSONRPCHandler jsonRpcHandler;
+    private final AgentStore agentStore;
     private final A2AUserProvider a2AUserProvider;
 
     @GetMapping("/.well-known/agent-card.json")
-    public AgentCard getAgentCard() {
-        return jsonRpcHandler.getAgentCard();
+    public ResponseEntity<AgentCard> getWellKnownAgentCard() {
+        return agentCard(agentStore.wellKnownAgent());
+    }
+
+    @GetMapping("/.well-known/agents/{agent}.json")
+    public ResponseEntity<AgentCard> getAgentCard(@PathVariable("agent") String agent) {
+        return agentCard(agentStore.agents().get(agent));
+    }
+
+    public ResponseEntity<AgentCard> agentCard(JSONRPCHandler handler){
+        if (handler == null) {
+            return ResponseEntity.notFound().header("a2a-agent","No agent found").build();
+        }
+        return ResponseEntity.ok(handler.getAgentCard());
     }
 
     @PostMapping("/agent")
-    public ResponseEntity<Object> handleAgentRequest(@RequestBody JsonNode body, @RequestHeader HttpHeaders headers) {
+    public ResponseEntity<Object> handleWellKnownAgentRequest(@RequestBody JsonNode body, @RequestHeader HttpHeaders headers) {
+        return handleAgentRequest(body, headers, agentStore.wellKnownAgent());
+    }
+
+    @PostMapping("/agents/{agent}")
+    public ResponseEntity<Object> handleAgentRequest(
+            @RequestBody JsonNode body,
+            @RequestHeader HttpHeaders headers,
+            @PathVariable("agent") String agent) {
+        return handleAgentRequest(body, headers, agentStore.agents().get(agent));
+    }
+
+    public ResponseEntity<Object> handleAgentRequest(@RequestBody JsonNode body, @RequestHeader HttpHeaders headers, JSONRPCHandler handler) {
+        if (handler == null) {
+            return ResponseEntity.notFound().header("a2a-agent","No agent found").build();
+        }
         try {
             JsonNode method = body != null ? body.get("method") : null;
             boolean streaming = method != null && (SendStreamingMessageRequest.METHOD.equals(method.asText())
@@ -50,7 +78,7 @@ public class AgentController {
 
             if (streaming) {
                 var streamingRequest = Utils.OBJECT_MAPPER.treeToValue(body, StreamingJSONRPCRequest.class);
-                var streamingResponse = processStreamingRequest(streamingRequest, context);
+                var streamingResponse = processStreamingRequest(handler, streamingRequest, context);
                 SseEmitter emitter = new SseEmitter(Duration.ofMinutes(10).toMillis());
                 var subscriber = new Flow.Subscriber<>() {
                     private Flow.Subscription subscription;
@@ -86,7 +114,7 @@ public class AgentController {
                 return ResponseEntity.ok().contentType(MediaType.TEXT_EVENT_STREAM).body(emitter);
             } else {
                 var nonStreamingRequest = Utils.OBJECT_MAPPER.treeToValue(body, NonStreamingJSONRPCRequest.class);
-                JSONRPCResponse<?> nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context);
+                JSONRPCResponse<?> nonStreamingResponse = processNonStreamingRequest(handler, nonStreamingRequest, context);
                 return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(nonStreamingResponse);
             }
         } catch (Exception t) {
@@ -123,7 +151,9 @@ public class AgentController {
     }
 
     private JSONRPCResponse<?> processNonStreamingRequest(
-            NonStreamingJSONRPCRequest<?> request, ServerCallContext context) {
+            JSONRPCHandler jsonRpcHandler,
+            NonStreamingJSONRPCRequest<?> request,
+            ServerCallContext context) {
         return switch (request) {
             case GetTaskRequest req -> jsonRpcHandler.onGetTask(req, context);
             case CancelTaskRequest req -> jsonRpcHandler.onCancelTask(req, context);
@@ -139,7 +169,9 @@ public class AgentController {
     }
 
     private Flow.Publisher<? extends JSONRPCResponse<?>> processStreamingRequest(
-            StreamingJSONRPCRequest<?> request, ServerCallContext context) {
+            JSONRPCHandler jsonRpcHandler,
+            StreamingJSONRPCRequest<?> request,
+            ServerCallContext context) {
         return switch (request) {
             case SendStreamingMessageRequest req -> jsonRpcHandler.onMessageSendStream(req, context);
             case TaskResubscriptionRequest req -> jsonRpcHandler.onResubscribeToTask(req, context);
