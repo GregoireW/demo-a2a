@@ -6,6 +6,7 @@ import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.*;
+import org.springframework.util.MimeTypeUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -75,8 +76,8 @@ public class ColorAgent implements AgentDefinition {
                 .description("Paint something with a specified color")
                 .version("1.0.0")
                 .documentationUrl("http://example.com/color")
-                .defaultInputModes(Collections.singletonList("text"))
-                .defaultOutputModes(Collections.singletonList("text"))
+                .defaultInputModes(Collections.singletonList(MimeTypeUtils.TEXT_PLAIN_VALUE))
+                .defaultOutputModes(Collections.singletonList(MimeTypeUtils.TEXT_PLAIN_VALUE))
                 .skills(Collections.singletonList(new AgentSkill.Builder()
                         .id("paint_house")
                         .name("Paint house")
@@ -98,8 +99,8 @@ public class ColorAgent implements AgentDefinition {
                 .description("Paint something with a specified color")
                 .version("1.0.0")
                 .documentationUrl("http://example.com/color")
-                .defaultInputModes(Collections.singletonList("text"))
-                .defaultOutputModes(Collections.singletonList("text"))
+                .defaultInputModes(Collections.singletonList(MimeTypeUtils.TEXT_PLAIN_VALUE))
+                .defaultOutputModes(Collections.singletonList(MimeTypeUtils.TEXT_PLAIN_VALUE))
                 .security(List.of(Map.of(OpenIdConnectSecurityScheme.OPENID_CONNECT,
                         List.of("oidc", "profile"))))
                 .skills(List.of())

@@ -6,6 +6,7 @@ import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.*;
+import org.springframework.util.MimeTypeUtils;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -131,8 +132,8 @@ public class HelloWorldAgent implements AgentDefinition {
                 .description("Just a hello world agent")
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
-                .defaultInputModes(Collections.singletonList("text"))
-                .defaultOutputModes(Collections.singletonList("text"))
+                .defaultInputModes(Collections.singletonList(MimeTypeUtils.TEXT_PLAIN_VALUE))
+                .defaultOutputModes(Collections.singletonList(MimeTypeUtils.TEXT_PLAIN_VALUE))
                 .skills(Collections.singletonList(new AgentSkill.Builder()
                         .id("hello_world")
                         .name("Returns hello world")
